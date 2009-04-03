@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.7.0RC2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>Services_DoingText</name>
+ <channel>pear.php.net</channel>
+ <summary>A wrapper to the doingText API.</summary>
+ <description>
+    Services_DoingText allows you to read your discussions (or a single discussion), and you can create a new one.
+ </description>
+ <lead>
+  <name>Till Klampaeckel</name>
+  <user>till</user>
+  <email>till@php.net</email>
+  <active>yes</active>
+ </lead>
+ <date>2009-04-03</date>
+ <time>12:00:00</time>
+ <version>
+  <release>0.1.0</release>
+  <api>0.1.0</api>
+ </version>
+ <stability>
+  <release>alpha</release>
+  <api>alpha</api>
+ </stability>
+ <license uri="http://www.opensource.org/licenses/bsd-license.php">The BSD License</license>
+ <notes>
+* initial release
+ </notes>
+ <contents>
+  <dir name="/">
+   <dir name="Services">
+    <dir name="DoingText">
+     <file name="Exception.php" role="php">
+      <tasks:replace from="@package_version@" to="version" type="package-info" />
+     </file>
+    </dir> <!-- /Services/DoingText -->
+    <file name="DoingText.php" role="php">
+     <tasks:replace from="@package_version@" to="version" type="package-info" />
+    </file>
+   </dir> <!-- /Services -->
+   <dir name="tests">
+    <dir name="Services">
+     <file role="test" baseinstalldir="Services_DoingText" name="DoingText.php" />
+     <file role="test" baseinstalldir="Services_DoingText" name="test-conf.php.dist" />
+    </dir> <!-- /tests/Services -->
+   </dir> <!-- /tests -->
+  </dir> <!-- / -->
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.2.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0b1</min>
+   </pearinstaller>
+   <package>
+    <name>HTTP_Request2</name>
+    <channel>pear.php.net</channel>
+    <min>0.3.0</min>
+   </package>
+  </required>
+ </dependencies>
+ <phprelease />
+ <changelog>
+  <release>
+   <version>
+    <release>0.1.0</release>
+    <api>0.1.0</api>
+   </version>
+   <stability>
+    <release>alpha</release>
+    <api>alpha</api>
+   </stability>
+   <date>2009-04-03</date>
+   <license uri="http://www.opensource.org/licenses/bsd-license.php">The BSD License</license>
+   <notes>* initial release</notes>
+  </release>
+ </changelog>
+</package>
