@@ -47,6 +47,11 @@
 require_once 'Services/DoingText/Exception.php';
 
 /**
+ * Services_DoingText_Response
+ */
+require_once 'Services/DoingText/Response.php';
+
+/**
  * Services_DoingText
  *
  * @category Services
@@ -66,12 +71,14 @@ class Services_DoingText
     protected $password;
     protected $username;
     
+    protected $responseClass = 'Services_DoingText_Response';
+    
     /**
      * Error/Status codes, conform to HTTP.
      * @access global
      */
-    const ERR_PRECONDITION = 412;
-
+    const ERR_NOT_ACCEPTABLE = 406;
+    const ERR_PRECONDITION   = 412;
     /**
      * __construct
      *
@@ -123,7 +130,7 @@ class Services_DoingText
         if ($title !== null) {
             $data['title'] = $title;
         }
-        if ($permaLink === null) {
+        if ($permaLink !== null) {
             $data['permalink'] = $permaLink;
         }
         $data['content'] = $content;
@@ -132,8 +139,13 @@ class Services_DoingText
 
         $response = $this->makeRequest('discussions.xml', 'POST');
 
-        $obj = $this->parseResponse($response);
-        return $obj;
+        $obj = $this->parseResponse($response['body']);
+        
+        $cls = new $this->responseClass($obj);
+        $cls->setCode($response['code']);
+        $cls->setBody($response['body']);
+
+        return $cls;
     }
 
     /**
@@ -152,8 +164,35 @@ class Services_DoingText
         } else {
             $response = $this->makeRequest("discussions/{$permaLink}.xml");
         }
-        $obj = $this->parseResponse($response);
-        return $obj;
+
+        $obj = $this->parseResponse($response['body']);
+        
+        $cls = new $this->responseClass($obj);
+        $cls->setCode($response['code']);
+        $cls->setBody($response['body']);
+        
+        return $cls;
+    }
+
+    /**
+     * In case you want to override the response. This class must extend
+     * Services_DoingText_Response
+     *
+     * @param string $className The class to use.
+     *
+     * @return Services_DoingText
+     * @throws Services_DoingText_Exception If the class is not loaded!
+     */
+    public function setResponseClass($className)
+    {
+        if (!class_exists($className)) {
+            throw new Services_DoingText_Exception(
+                "Class {$className} not found",
+                self::ERR_PRECONDITION
+            );
+        }
+        $this->responseClass = $className;
+        return $this;
     }
 
     /**
@@ -182,8 +221,7 @@ class Services_DoingText
             );
         }
         $uri = $this->endpoint . $url;
-        
-        $this->httpClient->setHeader('Accept', 'xml');
+
         $this->httpClient->setUrl($uri);
 
         $this->httpClient->setMethod($method);
@@ -191,24 +229,41 @@ class Services_DoingText
         $status   = $response->getStatus();
         $body     = $response->getBody();
         
-        if (!in_array($status, array(200, 304))) {
+        if (!in_array($status, array(200, 201, 302, 304))) {
             switch ($status) {
             case 401:
                 $msg = 'Wrong username and/or password';
                 break;
             case 422:
                 $msg = "Provided input parameters are invalid.";
-                var_dump($body);
                 break;
             default:
                 $msg  = "An error occured: {$status}\n";
-                $msg .= "Message: {$body}";
+                $msg .= "Message: {$body}\n";
+                $msg .= "Header:\n";
+                foreach ($response->getHeader() as $header => $value) {
+                    $msg .= "{$header}: {$value}\n";
+                }
                 break;
             }
             throw new Services_DoingText_Exception($msg, $status);
         }
-        
-        return $body;
+        if ($status == 302) {
+            $location = $response->getHeader('location');
+            if ($location === null) {
+                throw new Services_DoingText_Exception(
+                    'Server sent a notice to redirect, but provided no url to follow.',
+                    self::ERR_PRECONDITION
+                );
+            }
+            $location = str_replace($this->endpoint, '', $location); // strip endpoint
+            return $this->makeRequest($location);
+        } else {
+            return array(
+                'body' => $body,
+                'code' => $status,
+            );
+        }
     }
 
     /**
