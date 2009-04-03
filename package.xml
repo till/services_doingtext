@@ -30,6 +30,9 @@
   <dir name="/">
    <dir name="Services">
     <dir name="DoingText">
+     <file name="Response.php" role="php">
+      <tasks:replace from="@package_version@" to="version" type="package-info" />
+     </file>
      <file name="Exception.php" role="php">
       <tasks:replace from="@package_version@" to="version" type="package-info" />
      </file>
