@@ -2,4 +2,6 @@
 $username = '';
 $password = '';
 
+$permaLink = '';
+
 $endpoint = '';
