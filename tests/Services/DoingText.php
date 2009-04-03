@@ -20,11 +20,14 @@ class Services_DoingTextTest extends PHPUnit_Framework_TestCase
 
     public function testIfCreatingADiscussionWorks()
     {
-        //$dt = new Services_DoingText($this->username, $this->password);
+        $dt = new Services_DoingText($this->username, $this->password);
         
-        //$permaLink = 'till' . date('YmdHis');
+        $permaLink = substr(sha1('till' . date('YmdHis')), 0, 8);
         
-        //$dt->add('Lorem ipsum.', $permaLink, sha1($permaLink));
+        $dt->add('Lorem ipsum.', $permaLink, $permaLink); // disregard response
+        
+        $discussion = $dt->get($permaLink);
+        $this->assertEquals($permaLink, $discussion['permalink']);
     }
 
     public function testIfIncorrectUserThrowsException()
@@ -40,7 +43,7 @@ class Services_DoingTextTest extends PHPUnit_Framework_TestCase
         $dt         = new Services_DoingText($this->username, $this->password);
         $discussion = $dt->get($this->permaLink);
 
-        $this->assertEquals(true, is_array($profile));
+        $this->assertEquals(true, is_array($discussion));
         $this->assertEquals($this->permaLink, $discussion['permalink']);
     }
 
