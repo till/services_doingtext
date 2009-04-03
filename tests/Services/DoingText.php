@@ -22,12 +22,24 @@ class Services_DoingTextTest extends PHPUnit_Framework_TestCase
     {
         $dt = new Services_DoingText($this->username, $this->password);
         
-        $permaLink = substr(sha1('till' . date('YmdHis')), 0, 8);
+        $permaLink = 'tfk' . substr(sha1('till' . date('YmdHis')), 0, 8);
         
-        $dt->add('Lorem ipsum.', $permaLink, $permaLink); // disregard response
+        $title = 'Test POST Services_DoingText';
         
-        $discussion = $dt->get($permaLink);
+        $text  = 'Lorem ipsum.' . date('YmdHis');
+        $text .= "\n" . 'Titel: ' . $title;
+        $text .= "\n" . 'Permalink: ' . $permaLink;
+        
+        $discussion = $dt->add(
+            $text,
+            $title,
+            $permaLink
+        );
         $this->assertEquals($permaLink, $discussion['permalink']);
+        
+        // try again to make sure :-)
+        $discussion2 = $dt->get($permaLink);
+        $this->assertEquals($permaLink, $discussion2['permalink']);
     }
 
     public function testIfIncorrectUserThrowsException()
@@ -43,7 +55,7 @@ class Services_DoingTextTest extends PHPUnit_Framework_TestCase
         $dt         = new Services_DoingText($this->username, $this->password);
         $discussion = $dt->get($this->permaLink);
 
-        $this->assertEquals(true, is_array($discussion));
+        $this->assertEquals(true, ($discussion instanceof Services_DoingText_Response));
         $this->assertEquals($this->permaLink, $discussion['permalink']);
     }
 
@@ -52,6 +64,6 @@ class Services_DoingTextTest extends PHPUnit_Framework_TestCase
         $dt      = new Services_DoingText($this->username, $this->password);
         $profile = $dt->get();
 
-        $this->assertEquals(true, is_array($profile));
+        $this->assertEquals(true, ($profile instanceof Services_DoingText_Response));
     }
 }
