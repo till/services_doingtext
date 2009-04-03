@@ -1,9 +1,18 @@
 <?php
+
+/**
+ * Services_DoingText_Exception
+ */
+require_once 'Services/DoingText/Exception.php';
+
 /**
  * @category Services
  *
  * @author Till Klampaeckel <till@php.net>
  * @license New BSD License
+ * @todo Services_DoingText::setClient()
+ * @todo Services_DoingText::setAuth()
+ * @todo Services_DoingText::setEndpoint()
  */
 class Services_DoingText
 {
@@ -12,17 +21,32 @@ class Services_DoingText
     protected $password;
     protected $username;
 
+    /**
+     * __construct
+     *
+     * @param string        $username   The username (or email).
+     * @param string        $password   The password.
+     * @param HTTP_Request2 $httpClient Optional, in case you need the customization.
+     *
+     * @returns Services_DoingText
+     */
     public function __construct($username, $password, HTTP_Request2 $httpClient = null)
     {
         $this->username = $username;
         $this->password = $password;
         
-        if ($client === null) {
-            
+        if ($httpClient === null) {
+            if (!class_exists('HTTP_Request2')) {
+                include_once 'HTTP/Request2.php';
+            }
+            if (!class_exists('HTTP_Request2')) {
+                throw new Services_DoingText_Exception('Could not load HTTP_Request2.', 500);
+            }
+            $this->httpClient = new HTTP_Request2();
         } else {
             $this->httpClient = $httpClient;
-            $this->httpClient->setAuth($username, $password);
         }
+        $this->httpClient->setAuth($username, $password);
     }
 
     /**
@@ -55,6 +79,15 @@ class Services_DoingText
         return $obj;
     }
 
+    /**
+     * If no parameter is provided, we get all discussions of the current user.
+     *
+     * @param string $permaLink Optional, the permalink/ID of a discussion.
+     *
+     * @return array
+     * @uses   self::makeRequest()
+     * @uses   self::parseResponse()
+     */
     public function get($permaLink = null)
     {
         if ($permaLink === null) {
@@ -76,25 +109,40 @@ class Services_DoingText
      * @uses   self::$endpoint
      * @uses   self::$httpClient
      */
-    protected makeRequest($url, $method = 'GET')
+    protected function makeRequest($url, $method = 'GET')
     {
         $uri = $this->endpoint . $url;
+        
         $this->httpClient->setUrl($uri);
 
         $this->httpClient->setMethod($method);
-        return $this->httpClient->send();
+        $response = $this->httpClient->send();
+        
+        if (!in_array($response->getStatus(), array(200, 304))) {
+            switch ($response->getStatus()) {
+            case 401:
+                $msg = 'Wrong username and/or password';
+                break;
+            default:
+                $msg = "An error occured: {$response->getStatus()}";
+                break;
+            }
+            throw new Services_DoingText_Exception($msg, $response->getStatus());
+        }
+        
+        return $response->getBody();
     }
 
     /**
-     * Parse the response from {@link makeRequest()}.
+     * Parse the response from {@link makeRequest()}. Forces an array and we 
+     * receive an array stacked with SimpleXMLElements.
      *
      * @param string $xml XML'd response.
      *
-     * @return string
-     * @todo   Throw exception if something is wrong!
+     * @return array
      */
     protected function parseResponse($xml)
-    {
-        return simple_xml_loadstring($xml);
+    {   
+        return (array) simplexml_load_string($xml);
     }
 }
