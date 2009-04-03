@@ -4,6 +4,12 @@ How to install this package:
 2) cd services_doingtext
 3) pear install -f --alldeps package.xml
 
+Alternative:
+
+1) pear install -f http://cloud.github.com/downloads/till/services_doingtext/Services_DoingText-0.1.0.tgz
+
+(Replace 0.1.0 with the current release, I might forget to update the README!)
+
 Notice
 
 Version 0.1.0 -- breaks in BC are allowed. ;-)
