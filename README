@@ -4,7 +4,11 @@ How to install this package:
 2) cd services_doingtext
 3) pear install -f --alldeps package.xml
 
+Notice
+
+Version 0.1.0 -- breaks in BC are allowed. ;-)
+
 Todo
 
 1) More set()'rs
-2) add() currently breaks
+2) DELETE when it's available
